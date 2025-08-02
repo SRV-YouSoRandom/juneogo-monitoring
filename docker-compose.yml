@@ -49,21 +49,15 @@ services:
         max-size: '10m'
         max-file: '3'
 
-  # NEW: Loki Service
+  # Loki for log aggregation
   loki:
-    image: grafana/loki:2.9.2
+    image: grafana/loki:3.0.0
     container_name: loki
     restart: unless-stopped
-    ports:
-      - "3100:3100"
     volumes:
-      - ./loki/loki-config.yaml:/etc/loki/local-config.yaml
-      - ./loki/data:/loki
+      - ./loki/config.yml:/etc/loki/local-config.yaml
+      - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
-    environment:
-      - LOKI_RETENTION_PERIOD=${LOKI_RETENTION_PERIOD:-168h}
-      - LOKI_MAX_GLOBAL_STREAMS=${LOKI_MAX_GLOBAL_STREAMS:-5000}
-      - LOKI_MAX_QUERY_PARALLELISM=${LOKI_MAX_QUERY_PARALLELISM:-32}
     networks:
       monitoring-network:
         ipv4_address: 192.168.11.8
@@ -73,16 +67,16 @@ services:
         max-size: '10m'
         max-file: '3'
 
-  # NEW: Promtail Service
+  # Promtail for log shipping
   promtail:
-    image: grafana/promtail:2.9.2
+    image: grafana/promtail:3.0.0
     container_name: promtail
     restart: unless-stopped
     volumes:
-      - ./promtail/promtail-config.yaml:/etc/promtail/config.yml
+      - ./promtail/config.yml:/etc/promtail/config.yml
       - /var/log:/var/log:ro
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - ./promtail/positions.yaml:/tmp/positions.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
     command: -config.file=/etc/promtail/config.yml
     depends_on:
       - loki
@@ -95,7 +89,6 @@ services:
         max-size: '10m'
         max-file: '3'
 
-  # Existing Caddy service...
   monitoring-caddy:
     image: caddy:2.8.4
     container_name: monitoring-caddy
@@ -118,9 +111,8 @@ services:
         max-size: '10m'
         max-file: '3'
 
-  # Updated Grafana service...
   grafana:
-    image: grafana/grafana:10.2.2
+    image: grafana/grafana:11.0.0
     container_name: grafana
     user: root
     restart: unless-stopped
@@ -151,3 +143,7 @@ networks:
       config:
         - subnet: 192.168.11.0/24
           gateway: 192.168.11.1
+
+volumes:
+  loki-data:
+    driver: local

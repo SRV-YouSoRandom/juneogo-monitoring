@@ -21,7 +21,7 @@ datasources:
     version: 1
     uid: "JuneogoPrometheusSocotra"
 
-  # NEW: Loki Datasource
+  # Loki datasource for logs
   - name: Loki
     type: loki
     access: proxy
@@ -30,13 +30,13 @@ datasources:
     jsonData:
       maxLines: 1000
       derivedFields:
+        - datasourceUid: JuneogoPrometheusSocotra
+          matcherRegex: "traceID=(\\w+)"
+          name: TraceID
+          url: '$${__value.raw}'
         - datasourceUid: JuneogoPrometheusMainnet
           matcherRegex: "traceID=(\\w+)"
           name: TraceID
-          url: "$${__value.raw}"
-        - datasourceUid: JuneogoPrometheusSocotra  
-          matcherRegex: "traceID=(\\w+)"
-          name: TraceID
-          url: "$${__value.raw}"
+          url: '$${__value.raw}'
     version: 1
     uid: "JuneogoLoki"

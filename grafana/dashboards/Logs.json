@@ -11,21 +11,14 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
-        "target": {
-          "limit": 100,
-          "matchAny": false,
-          "tags": [],
-          "type": "dashboard"
-        },
         "type": "dashboard"
       }
     ]
   },
-  "description": "Comprehensive log analysis dashboard for JuneoGo monitoring infrastructure",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 14,
+  "id": null,
   "links": [
     {
       "icon": "external link",
@@ -36,24 +29,104 @@
   "liveNow": false,
   "panels": [
     {
-      "collapsed": false,
+      "datasource": {
+        "type": "loki",
+        "uid": "JuneogoLoki"
+      },
+      "description": "Recent error and warning logs across all containers",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 1,
-        "w": 24,
+        "h": 8,
+        "w": 12,
         "x": 0,
         "y": 0
       },
       "id": 1,
-      "panels": [],
-      "title": "Log Overview",
-      "type": "row"
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "JuneogoLoki"
+          },
+          "editorMode": "code",
+          "expr": "sum by (level) (count_over_time({job=\"containerlogs\"} |~ \"(?i)(error|warn|fatal|panic)\" [5m]))",
+          "queryType": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Error & Warning Log Rate",
+      "type": "timeseries"
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "JuneogoLoki"
       },
-      "description": "Total log volume per service",
+      "description": "Container log volume over time",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -99,15 +172,15 @@
               }
             ]
           },
-          "unit": "logs/sec"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 0,
-        "y": 1
+        "x": 12,
+        "y": 0
       },
       "id": 2,
       "options": {
@@ -129,7 +202,7 @@
             "uid": "JuneogoLoki"
           },
           "editorMode": "code",
-          "expr": "sum(rate({job=\"containerlogs\"}[5m])) by (container_name)",
+          "expr": "sum by (container_name) (rate({job=\"containerlogs\"}[5m]))",
           "queryType": "",
           "refId": "A"
         }
@@ -142,127 +215,21 @@
         "type": "loki",
         "uid": "JuneogoLoki"
       },
-      "description": "Error rate across all services",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 2,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "errors/sec"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 1
-      },
-      "id": 3,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "JuneogoLoki"
-          },
-          "editorMode": "code",
-          "expr": "sum(rate({job=\"containerlogs\"} |~ \"(?i)(error|fatal|critical|panic|exception)\"[5m])) by (container_name)",
-          "queryType": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Error Rate by Container",
-      "type": "timeseries"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 9
-      },
-      "id": 4,
-      "panels": [],
-      "title": "JuneoGo Service Logs",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "JuneogoLoki"
-      },
-      "description": "Recent log entries from JuneoGo containers",
+      "description": "Live log stream with filtering capabilities",
       "gridPos": {
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 10
+        "y": 8
       },
-      "id": 5,
+      "id": 3,
       "options": {
         "dedupStrategy": "none",
         "enableLogDetails": true,
         "prettifyLogMessage": false,
         "showCommonLabels": false,
         "showLabels": false,
-        "showTime": false,
+        "showTime": true,
         "sortOrder": "Descending",
         "wrapLogMessage": false
       },
@@ -273,73 +240,36 @@
             "uid": "JuneogoLoki"
           },
           "editorMode": "code",
-          "expr": "{job=\"containerlogs\", container_name=~\"prometheus.*|grafana|loki|promtail\"} | json | line_format \"{{.timestamp}} [{{.container_name}}] {{.log}}\"",
+          "expr": "{job=\"containerlogs\", container_name=~\".*prometheus.*|.*grafana.*|.*loki.*|.*promtail.*\"}",
           "queryType": "",
           "refId": "A"
         }
       ],
-      "title": "JuneoGo Service Logs",
+      "title": "Live Logs - Monitoring Stack",
       "type": "logs"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 22
-      },
-      "id": 6,
-      "panels": [],
-      "title": "Error Analysis",
-      "type": "row"
     },
     {
       "datasource": {
         "type": "loki",
         "uid": "JuneogoLoki"
       },
-      "description": "Top error messages by frequency",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": []
-        },
-        "overrides": []
-      },
+      "description": "System logs from syslog",
       "gridPos": {
-        "h": 8,
-        "w": 12,
+        "h": 10,
+        "w": 24,
         "x": 0,
-        "y": 23
+        "y": 20
       },
-      "id": 7,
+      "id": 4,
       "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": ["value"]
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": ["lastNotNull"],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
       },
       "targets": [
         {
@@ -348,32 +278,30 @@
             "uid": "JuneogoLoki"
           },
           "editorMode": "code",
-          "expr": "topk(10, sum by (container_name) (count_over_time({job=\"containerlogs\"} |~ \"(?i)(error|fatal|critical|panic)\"[$__range])))",
+          "expr": "{job=\"syslog\"} |~ \"(?i)(error|warn|fail)\"",
           "queryType": "",
           "refId": "A"
         }
       ],
-      "title": "Error Distribution by Container",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "JuneogoLoki"
-      },
-      "description": "Recent error and warning logs",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 23
-      },
-      "id": 8,
-      "options": {
-        "dedupStrategy": "none",
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showLabels": false,
-        "showTime": false,
-        "
+      "title": "System Error Logs",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["Juneo", "Logs"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Logs Dashboard",
+  "uid": "juneogo-logs",
+  "version": 1,
+  "weekStart": ""
+}

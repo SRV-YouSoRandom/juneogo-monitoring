@@ -50,46 +50,27 @@ scrape_configs:
     pipeline_stages:
       - regex:
           expression: '^(?P<timestamp>\S+\s+\d+\s+\d+:\d+:\d+)\s+(?P<hostname>\S+)\s+(?P<service>\S+?)(\[(?P<pid>\d+)\])?:\s+(?P<message>.*)$'
-      - timestamp:
-          format: Jan 2 15:04:05
-          source: timestamp
       - labels:
           hostname:
           service:
           pid:
+      - timestamp:
+          format: Jan _2 15:04:05
+          source: timestamp
 
-  # Authentication logs
-  - job_name: auth
+  # JuneoGo specific logs (if available)
+  - job_name: juneogo
     static_configs:
       - targets:
           - localhost
         labels:
-          job: auth
-          __path__: /var/log/auth.log
+          job: juneogo
+          __path__: /var/log/juneogo/*.log
     pipeline_stages:
       - regex:
-          expression: '^(?P<timestamp>\S+\s+\d+\s+\d+:\d+:\d+)\s+(?P<hostname>\S+)\s+(?P<service>\S+?)(\[(?P<pid>\d+)\])?:\s+(?P<message>.*)$'
-      - timestamp:
-          format: Jan 2 15:04:05
-          source: timestamp
+          expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z)\s+(?P<level>\w+)\s+(?P<message>.*)$'
       - labels:
-          hostname:
-          service:
-
-  # Nginx/Apache logs (if present)
-  - job_name: nginx
-    static_configs:
-      - targets:
-          - localhost
-        labels:
-          job: nginx
-          __path__: /var/log/nginx/*log
-    pipeline_stages:
-      - regex:
-          expression: '^(?P<remote_addr>\S+)\s+-\s+(?P<remote_user>\S+)\s+\[(?P<timestamp>[^\]]+)\]\s+"(?P<method>\S+)\s+(?P<path>\S+)\s+(?P<protocol>\S+)"\s+(?P<status>\d+)\s+(?P<body_bytes_sent>\d+)\s+"(?P<http_referer>[^"]*)"\s+"(?P<http_user_agent>[^"]*)"'
+          level:
       - timestamp:
-          format: 02/Jan/2006:15:04:05 -0700
+          format: RFC3339
           source: timestamp
-      - labels:
-          method:
-          status:

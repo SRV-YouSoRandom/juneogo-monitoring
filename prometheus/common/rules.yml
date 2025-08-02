@@ -20,28 +20,28 @@ groups:
             )
           )
 
-  # NEW: Log-based rules
-  - name: log_analysis
+  - name: logging_alerts
     rules:
-      - record: error_rate_5m
+      - alert: HighErrorRate
         expr: |
-          sum(rate({job="containerlogs"} |= "ERROR" [5m])) by (container_name)
-      
-      - record: critical_errors_5m
-        expr: |
-          sum(rate({job="containerlogs"} |~ "(?i)(fatal|critical|panic)" [5m])) by (container_name)
-      
-      - record: connection_errors_5m
-        expr: |
-          sum(rate({job="containerlogs"} |~ "(?i)(connection.*failed|timeout|refused)" [5m])) by (container_name)
+          sum by (container_name) (
+            rate({job="containerlogs"} |~ "(?i)(error|fatal|panic)" [5m])
+          ) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate in container {{ $labels.container_name }}"
+          description: "Container {{ $labels.container_name }} is generating errors at {{ $value }} per second"
 
-  # NEW: Security monitoring
-  - name: security_alerts
-    rules:
-      - record: failed_login_attempts_5m
+      - alert: LogVolumeSpike
         expr: |
-          sum(rate({job="auth"} |~ "(?i)(failed|invalid|authentication.*failed)" [5m]))
-      
-      - record: sudo_usage_5m
-        expr: |
-          sum(rate({job="auth"} |= "sudo" [5m]))
+          sum by (container_name) (
+            rate({job="containerlogs"}[5m])
+          ) > 50
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Log volume spike in {{ $labels.container_name }}"
+          description: "Container {{ $labels.container_name }} log volume is {{ $value }} logs/sec"
