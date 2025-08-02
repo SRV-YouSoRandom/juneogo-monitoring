@@ -39,7 +39,7 @@ config = {
         {
             'job_name': 'juneogo-machine',
             'metrics_path': '/metrics',
-            'scheme': 'https',
+            'scheme': 'http',
             'basic_auth': {
                 'username': PROMETHEUS_USERNAME,
                 'password': PROMETHEUS_PASSWORD

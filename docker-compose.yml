@@ -89,27 +89,27 @@ services:
         max-size: '10m'
         max-file: '3'
 
-  monitoring-caddy:
-    image: caddy:2.8.4
-    container_name: monitoring-caddy
-    restart: unless-stopped
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
-      - ./caddy/caddy_data:/data
-      - ./caddy/caddy_config:/config
-    env_file:
-      - .env
-    networks:
-      monitoring-network:
-        ipv4_address: 192.168.11.6
-    logging:
-      driver: 'json-file'
-      options:
-        max-size: '10m'
-        max-file: '3'
+  # monitoring-caddy:
+  #   image: caddy:2.8.4
+  #   container_name: monitoring-caddy
+  #   restart: unless-stopped
+  #   ports:
+  #     - '80:80'
+  #     - '443:443'
+  #   volumes:
+  #     - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+  #     - ./caddy/caddy_data:/data
+  #     - ./caddy/caddy_config:/config
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     monitoring-network:
+  #       ipv4_address: 192.168.11.6
+  #   logging:
+  #     driver: 'json-file'
+  #     options:
+  #       max-size: '10m'
+  #       max-file: '3'
 
   grafana:
     image: grafana/grafana:11.0.0
