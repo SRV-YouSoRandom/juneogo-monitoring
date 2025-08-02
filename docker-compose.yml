@@ -116,6 +116,8 @@ services:
     container_name: grafana
     user: root
     restart: unless-stopped
+    ports:
+      - '3001:3001'
     volumes:
       - ./grafana/data:/var/lib/grafana
       - ./grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/default.yaml
