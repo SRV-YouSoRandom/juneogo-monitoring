@@ -15,9 +15,9 @@ services:
     environment:
       - PROMETHEUS_CONFIG_DIR=/app/prometheus/socotra
       - PROMETHEUS_NAME=prometheus-socotra
-    networks:
-      monitoring-network:
-        ipv4_address: 192.168.11.4
+    # networks:
+    #   monitoring-network:
+    #     ipv4_address: 192.168.11.4
     logging:
       driver: 'json-file'
       options:
@@ -40,9 +40,9 @@ services:
     environment:
       - PROMETHEUS_CONFIG_DIR=/app/prometheus/mainnet
       - PROMETHEUS_NAME=prometheus-mainnet
-    networks:
-      monitoring-network:
-        ipv4_address: 192.168.11.5
+    # networks:
+    #   monitoring-network:
+    #     ipv4_address: 192.168.11.5
     logging:
       driver: 'json-file'
       options:
@@ -58,9 +58,9 @@ services:
       - ./loki/config.yml:/etc/loki/local-config.yaml
       - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      monitoring-network:
-        ipv4_address: 192.168.11.8
+    # networks:
+    #   monitoring-network:
+    #     ipv4_address: 192.168.11.8
     logging:
       driver: 'json-file'
       options:
@@ -80,9 +80,9 @@ services:
     command: -config.file=/etc/promtail/config.yml
     depends_on:
       - loki
-    networks:
-      monitoring-network:
-        ipv4_address: 192.168.11.9
+    # networks:
+    #   monitoring-network:
+    #     ipv4_address: 192.168.11.9
     logging:
       driver: 'json-file'
       options:
@@ -129,22 +129,22 @@ services:
       - .env
     environment:
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
-    networks:
-      monitoring-network:
-        ipv4_address: 192.168.11.7
+    # networks:
+    #   monitoring-network:
+    #     ipv4_address: 192.168.11.7
     logging:
       driver: 'json-file'
       options:
         max-size: '10m'
         max-file: '3'
 
-networks:
-  monitoring-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 192.168.11.0/24
-          gateway: 192.168.11.1
+# networks:
+#   monitoring-network:
+#     driver: bridge
+#     ipam:
+#       config:
+#         - subnet: 192.168.11.0/24
+#           gateway: 192.168.11.1
 
 volumes:
   loki-data:
