@@ -6,8 +6,6 @@ services:
     container_name: prometheus-socotra
     user: root
     restart: unless-stopped
-    # ports:
-    #   - '9090:9090' # Uncomment to use without HTTPS
     volumes:
       - ./prometheus/socotra:/app/prometheus/socotra
       - ./prometheus/common:/app/prometheus/common
@@ -33,8 +31,6 @@ services:
     container_name: prometheus-mainnet
     user: root
     restart: unless-stopped
-    # ports:
-    #   - '9091:9090' # Uncomment to use without HTTPS
     volumes:
       - ./prometheus/mainnet:/app/prometheus/mainnet
       - ./prometheus/common:/app/prometheus/common
@@ -53,6 +49,53 @@ services:
         max-size: '10m'
         max-file: '3'
 
+  # NEW: Loki Service
+  loki:
+    image: grafana/loki:2.9.2
+    container_name: loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yaml:/etc/loki/local-config.yaml
+      - ./loki/data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    environment:
+      - LOKI_RETENTION_PERIOD=${LOKI_RETENTION_PERIOD:-168h}
+      - LOKI_MAX_GLOBAL_STREAMS=${LOKI_MAX_GLOBAL_STREAMS:-5000}
+      - LOKI_MAX_QUERY_PARALLELISM=${LOKI_MAX_QUERY_PARALLELISM:-32}
+    networks:
+      monitoring-network:
+        ipv4_address: 192.168.11.8
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  # NEW: Promtail Service
+  promtail:
+    image: grafana/promtail:2.9.2
+    container_name: promtail
+    restart: unless-stopped
+    volumes:
+      - ./promtail/promtail-config.yaml:/etc/promtail/config.yml
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./promtail/positions.yaml:/tmp/positions.yaml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      monitoring-network:
+        ipv4_address: 192.168.11.9
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  # Existing Caddy service...
   monitoring-caddy:
     image: caddy:2.8.4
     container_name: monitoring-caddy
@@ -75,11 +118,10 @@ services:
         max-size: '10m'
         max-file: '3'
 
+  # Updated Grafana service...
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:10.2.2
     container_name: grafana
-    # ports:
-    #   - '3000:3000' # Uncomment tho use without HTTPS
     user: root
     restart: unless-stopped
     volumes:
@@ -91,7 +133,8 @@ services:
       - ./grafana/alertRules.yaml:/etc/grafana/provisioning/alerting/alertRules.yaml
     env_file:
       - .env
-
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
     networks:
       monitoring-network:
         ipv4_address: 192.168.11.7

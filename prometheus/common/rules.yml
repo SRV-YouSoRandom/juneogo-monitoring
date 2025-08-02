@@ -7,6 +7,7 @@ groups:
             label_replace(up{job="juneogo"} == 0, "status", "down", "", "") or 
             label_replace(juneomcn_P_percent_connected{job="juneogo"}, "status", "up", "", "")
           ) by (server, status)
+      
       - record: node_list_low_space
         expr: |
           min by (server) (
@@ -18,3 +19,29 @@ groups:
               ""
             )
           )
+
+  # NEW: Log-based rules
+  - name: log_analysis
+    rules:
+      - record: error_rate_5m
+        expr: |
+          sum(rate({job="containerlogs"} |= "ERROR" [5m])) by (container_name)
+      
+      - record: critical_errors_5m
+        expr: |
+          sum(rate({job="containerlogs"} |~ "(?i)(fatal|critical|panic)" [5m])) by (container_name)
+      
+      - record: connection_errors_5m
+        expr: |
+          sum(rate({job="containerlogs"} |~ "(?i)(connection.*failed|timeout|refused)" [5m])) by (container_name)
+
+  # NEW: Security monitoring
+  - name: security_alerts
+    rules:
+      - record: failed_login_attempts_5m
+        expr: |
+          sum(rate({job="auth"} |~ "(?i)(failed|invalid|authentication.*failed)" [5m]))
+      
+      - record: sudo_usage_5m
+        expr: |
+          sum(rate({job="auth"} |= "sudo" [5m]))
